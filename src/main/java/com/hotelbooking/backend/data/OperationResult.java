@@ -2,7 +2,7 @@ package com.hotelbooking.backend.data;
 
 public enum OperationResult {
 
-    DONE(null), NULL_INPUT("Input data was null");
+    DONE(null), NULL_INPUT("Input data was null"), DUPLICATE("Value already exists"), NOT_FOUND("Value not found");
 
     private final String explanation;
 
