@@ -8,7 +8,7 @@ import com.hotelbooking.backend.room.Room;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MockDataStreamFactory<T extends DataEntity> implements DataStreamFactory<T> {
+public class MockDataStreamFactory<T extends DataEntity> implements DataStreamFactory<T, List<T>> {
 
     List<T> data = new ArrayList<>();
 
@@ -18,8 +18,8 @@ public class MockDataStreamFactory<T extends DataEntity> implements DataStreamFa
     }
 
     @Override
-    public DataStream<T> build() {
-        DataStream<T> stream = new MockDataStream<>();
+    public DataStream<T, List<T>> build() {
+        DataStream<T, List<T>> stream = new MockDataStream<>();
         stream.pushData(data);
         return stream;
     }

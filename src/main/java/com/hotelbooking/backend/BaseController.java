@@ -8,10 +8,10 @@ import com.hotelbooking.backend.utils.Response;
 import com.hotelbooking.backend.utils.ResponseWrapper;
 import jakarta.annotation.PreDestroy;
 
-public abstract class BaseController<T extends DataEntity> {
-    protected final DataManager<T> dataManager;
+public abstract class BaseController<T extends DataEntity, FT> {
+    protected final DataManager<T, FT> dataManager;
 
-    protected BaseController(DataManager<T> dataManager) {
+    protected BaseController(DataManager<T, FT> dataManager) {
         this.dataManager = dataManager;
     }
 

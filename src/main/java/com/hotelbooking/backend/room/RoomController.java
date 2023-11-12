@@ -2,6 +2,7 @@ package com.hotelbooking.backend.room;
 
 import com.hotelbooking.backend.BaseController;
 import com.hotelbooking.backend.data.DataManager;
+import com.hotelbooking.backend.data.filter.QueryFilter;
 import com.hotelbooking.backend.data.stream.factory.MockDataStreamFactory;
 import com.hotelbooking.backend.utils.Response;
 import com.hotelbooking.backend.utils.ResponseWrapper;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class RoomController extends BaseController<Room> {
+public class RoomController extends BaseController<Room, List<Room>> {
 
     protected RoomController() {
         super(new DataManager<>(new MockDataStreamFactory<Room>()
@@ -26,9 +27,9 @@ public class RoomController extends BaseController<Room> {
 
     @GetMapping("/room")
     public Response<Room> GetRoom(@RequestParam(value = "id", defaultValue = "1") int id) {
-        if(!dataManager.exists(Map.of("id", id))) return ResponseWrapper.WrapError("Room "+id+" not found");
+        if(!dataManager.exists(new Room(id, 0))) return ResponseWrapper.WrapError("Room "+id+" not found");
 
-        return ResponseWrapper.Wrap(dataManager.getOne(Map.of("id", id)));
+        return ResponseWrapper.Wrap(dataManager.getOne(new QueryFilter()));
     }
 
     @PostMapping("/room")
@@ -38,7 +39,7 @@ public class RoomController extends BaseController<Room> {
 
     @PostMapping("/room/delete")
     public Response<Room> RemoveRoom(@RequestParam(value = "id", defaultValue = "1") int id) {
-        Room room = dataManager.getOne(Map.of("id", id)).orElse(null);
+        Room room = dataManager.getOne(new QueryFilter()).orElse(null);
         if(room == null) return ResponseWrapper.WrapError("Room "+id+" not found");
         return processOperation(() -> dataManager.remove(room));
     }

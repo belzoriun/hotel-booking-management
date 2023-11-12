@@ -1,14 +1,17 @@
 package com.hotelbooking.backend.data.stream;
 
 import com.hotelbooking.backend.data.DataEntity;
-import com.hotelbooking.backend.data.filter.MockFilter;
 import com.hotelbooking.backend.data.filter.QueryFilter;
+import com.hotelbooking.backend.data.filter.condition.evaluate.EvaluatorVariable;
+import com.hotelbooking.backend.data.filter.condition.evaluate.ExecutionContext;
+import com.hotelbooking.backend.data.filter.condition.variable.ValueTypeHint;
+import com.hotelbooking.backend.data.filter.exception.InvalidOperationException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class MockDataStream<T extends DataEntity> implements DataStream<T> {
+public class MockDataStream<T extends DataEntity> implements DataStream<T, List<T>> {
 
     private final List<T> data = new ArrayList<>();
 
@@ -25,10 +28,7 @@ public class MockDataStream<T extends DataEntity> implements DataStream<T> {
     @Override
     public boolean exists(T value) {
         Map<String, Object> key = value.getKeyDescriptor().ExtractKey(value);
-        MockFilter<T> filter = new MockFilter<>();
-        for (Map.Entry<String, Object> entry : key.entrySet()) {
-            filter.filterKey(entry.getKey(), entry.getValue());
-        }
+        QueryFilter filter = new QueryFilter();
         return !this.pullData(filter).isEmpty();
     }
 
@@ -38,10 +38,7 @@ public class MockDataStream<T extends DataEntity> implements DataStream<T> {
             case ADD -> pushData(data);
             case CHANGE -> {
                 Map<String, Object> key = data.getKeyDescriptor().ExtractKey(data);
-                MockFilter<T> filter = new MockFilter<>();
-                for (Map.Entry<String, Object> entry : key.entrySet()) {
-                    filter.filterKey(entry.getKey(), entry.getValue());
-                }
+                QueryFilter filter = new QueryFilter();
                 List<T> toUpdate = pullData(filter);
                 for (T value : toUpdate) {
                     this.data.remove(value);
@@ -51,10 +48,7 @@ public class MockDataStream<T extends DataEntity> implements DataStream<T> {
             case REMOVE -> {
                 Map<String, Object> key = data.getKeyDescriptor().ExtractKey(data);
                 System.out.println(key);
-                MockFilter<T> filter = new MockFilter<>();
-                for (Map.Entry<String, Object> entry : key.entrySet()) {
-                    filter.filterKey(entry.getKey(), entry.getValue());
-                }
+                QueryFilter filter = new QueryFilter();
                 List<T> toRemove = pullData(filter);
                 System.out.println(toRemove);
                 for (T value : toRemove) {
@@ -76,7 +70,20 @@ public class MockDataStream<T extends DataEntity> implements DataStream<T> {
     }
 
     @Override
-    public List<T> pullData(QueryFilter<T> filter) {
-        return filter.setFilteringData(this.data).execute();
+    public List<T> pullData(QueryFilter filter) {
+        return data.stream().filter(v-> {
+            try {
+                EvaluatorVariable var = filter.execute(new ExecutionContext<>(v));
+                if(var.type.equals(ValueTypeHint.BOOLEAN)) return (boolean)var.value;
+            } catch (InvalidOperationException e) {
+                return false;
+            }
+            return false;
+        }).toList();
+    }
+
+    @Override
+    public List<T> pullData() {
+        return this.data;
     }
 }

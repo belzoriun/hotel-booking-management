@@ -1,19 +1,17 @@
 package com.hotelbooking.backend.data;
 
-import com.hotelbooking.backend.data.filter.MockFilter;
 import com.hotelbooking.backend.data.filter.QueryFilter;
 import com.hotelbooking.backend.data.stream.CommandType;
 import com.hotelbooking.backend.data.stream.DataStream;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-public class DataManager<T extends DataEntity> {
+public class DataManager<T extends DataEntity, FT> {
 
-    private final DataStream<T> dataStream;
+    private final DataStream<T, FT> dataStream;
 
-    public DataManager(DataStream<T> stream){
+    public DataManager(DataStream<T, FT> stream){
         this.dataStream = stream;
         this.dataStream.connect();
     }
@@ -22,31 +20,19 @@ public class DataManager<T extends DataEntity> {
         this.dataStream.disconnect();
     }
 
-    public boolean exists(Map<String, Object> key) {
-        MockFilter<T> filter = new MockFilter<>();
-        for (Map.Entry<String, Object> entry : key.entrySet()){
-            filter.filterKey(entry.getKey(), entry.getValue());
-        }
-        return !this.dataStream.pullData(filter).isEmpty();
-    }
-
     public boolean exists(T data) {
         return this.dataStream.exists(data);
     }
 
-    public Optional<T> getOne(Map<String, Object> key) {
-        MockFilter<T> filter = new MockFilter<>();
-        for (Map.Entry<String, Object> entry : key.entrySet()){
-            filter.filterKey(entry.getKey(), entry.getValue());
-        }
+    public Optional<T> getOne(QueryFilter filter) {
         return this.dataStream.pullData(filter).stream().findFirst();
     }
 
     public List<T> getAll() {
-        return this.dataStream.pullData(QueryFilter.ALL());
+        return this.dataStream.pullData();
     }
 
-    public List<T> getFiltered(QueryFilter<T> filter) {
+    public List<T> getFiltered(QueryFilter filter) {
         return this.dataStream.pullData(filter);
     }
 
