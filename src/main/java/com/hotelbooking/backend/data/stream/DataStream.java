@@ -1,17 +1,19 @@
 package com.hotelbooking.backend.data.stream;
 
 import com.hotelbooking.backend.data.DataEntity;
-import com.hotelbooking.backend.data.filter.QueryFilter;
+import com.hotelbooking.backend.data.OperationResult;
+import com.hotelbooking.backend.data.filter.QueryCommand;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface DataStream<T extends DataEntity, FT> {
+public interface DataStream<T extends DataEntity, QT> {
     public void connect();
     public void disconnect();
     public boolean exists(T value);
-    public void pushCommand(CommandType command, T data);
-    public void pushData(T data);
-    public void pushData(List<T> data);
-    public List<T> pullData(QueryFilter filter);
-    public List<T> pullData();
+    public Optional<T> getOne(T value);
+    public OperationResult add(T value);
+    public List<T> getAll();
+    public OperationResult remove(T value);
+    public void executeCommand(QueryCommand<QT> command);
 }

@@ -1,18 +1,18 @@
 package com.hotelbooking.backend;
 
 import com.hotelbooking.backend.data.DataEntity;
-import com.hotelbooking.backend.data.DataManager;
 import com.hotelbooking.backend.data.OperationResult;
+import com.hotelbooking.backend.data.stream.DataStream;
 import com.hotelbooking.backend.utils.OperationExecutor;
 import com.hotelbooking.backend.utils.Response;
 import com.hotelbooking.backend.utils.ResponseWrapper;
 import jakarta.annotation.PreDestroy;
 
-public abstract class BaseController<T extends DataEntity, FT> {
-    protected final DataManager<T, FT> dataManager;
+public abstract class BaseController<T extends DataEntity, QT> {
+    protected final DataStream<T, QT> dataStream;
 
-    protected BaseController(DataManager<T, FT> dataManager) {
-        this.dataManager = dataManager;
+    protected BaseController(DataStream<T, QT> dataStream) {
+        this.dataStream = dataStream;
     }
 
     protected Response<T> processOperation(OperationExecutor operation) {
@@ -25,6 +25,6 @@ public abstract class BaseController<T extends DataEntity, FT> {
 
     @PreDestroy
     public void destroy() {
-        this.dataManager.exit();
+        this.dataStream.disconnect();
     }
 }
