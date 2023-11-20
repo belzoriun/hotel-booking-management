@@ -8,10 +8,10 @@ import com.hotelbooking.backend.utils.Response;
 import com.hotelbooking.backend.utils.ResponseWrapper;
 import jakarta.annotation.PreDestroy;
 
-public abstract class BaseController<T extends DataEntity, QT> {
-    protected final DataStream<T, QT> dataStream;
+public abstract class BaseController<T> {
+    protected final DataStream dataStream;
 
-    protected BaseController(DataStream<T, QT> dataStream) {
+    protected BaseController(DataStream dataStream) {
         this.dataStream = dataStream;
     }
 

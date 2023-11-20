@@ -1,4 +1,4 @@
-package com.hotelbooking.backend.data.stream;
+package com.hotelbooking.backend.data;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

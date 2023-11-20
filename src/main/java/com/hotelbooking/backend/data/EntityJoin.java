@@ -4,6 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EntityField {
-    public String name();
+public @interface EntityJoin {
+    String ownerField();
+    String joinedEntityField();
 }
