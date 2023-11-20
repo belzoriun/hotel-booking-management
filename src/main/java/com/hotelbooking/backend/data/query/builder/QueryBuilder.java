@@ -8,24 +8,24 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectQueryBuilder<T> {
+public class QueryBuilder<T> {
     private final Class<T> baseEntity;
     private final List<Field> joins;
     private Condition<Boolean> condition = new Constant<>(true);
 
-    public SelectQueryBuilder(Class<T> entity) {
+    public QueryBuilder(Class<T> entity) {
         this.baseEntity = entity;
         this.joins = new ArrayList<>();
     }
 
-    public SelectQueryBuilder<T> join(Field join) {
+    public QueryBuilder<T> join(Field join) {
         if(join.isAnnotationPresent(EntityJoin.class)) {
             this.joins.add(join);
         }
         return this;
     }
 
-    public SelectQueryBuilder<T> where(Condition<Boolean> condition) {
+    public QueryBuilder<T> where(Condition<Boolean> condition) {
         this.condition = condition;
         return this;
     }

@@ -2,7 +2,8 @@ package com.hotelbooking.backend.data.stream.memory;
 
 import com.hotelbooking.backend.data.DataEntity;
 import com.hotelbooking.backend.data.EntityJoin;
-import com.hotelbooking.backend.data.query.builder.SelectQueryBuilder;
+import com.hotelbooking.backend.data.OperationResult;
+import com.hotelbooking.backend.data.query.builder.QueryBuilder;
 import com.hotelbooking.backend.data.stream.DataStream;
 import com.hotelbooking.backend.models.Booking;
 import com.hotelbooking.backend.models.Room;
@@ -43,9 +44,30 @@ public class MemoryDataStream implements DataStream {
     }
 
     @Override
-    public <T extends DataEntity> List<T> executeSelect(SelectQueryBuilder<T> query) {
+    public <T extends DataEntity> List<T> executeSelect(QueryBuilder<T> query) {
         return (List<T>) data.get(query.getSelectedEntity()).stream().map(d -> createJoin(d, query.getJoins()))
                 .filter(d -> query.getConditions().execute(d)).toList();
+    }
+
+    @Override
+    public <T extends DataEntity> Optional<T> add(T data) {
+        if(this.data.containsKey(data.getClass())) {
+            ((List<T>)this.data.get(data.getClass())).add(data);
+        } else {
+            List<T> newData = new ArrayList<>();
+            newData.add(data);
+            this.data.put(data.getClass(), newData);
+        }
+        return Optional.of(data);
+    }
+
+    @Override
+    public OperationResult remove(QueryBuilder<?> query) {
+        if(!this.data.containsKey(query.getSelectedEntity())) return OperationResult.NOT_FOUND;
+
+        List<? extends DataEntity> list = this.data.get(query.getSelectedEntity());
+        list.removeIf(d -> query.getConditions().execute(d));
+        return OperationResult.DONE;
     }
 
     private <T extends DataEntity> T createJoin(T data, List<Field> joins) {

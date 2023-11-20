@@ -1,6 +1,5 @@
-package com.hotelbooking.backend;
+package com.hotelbooking.backend.controller;
 
-import com.hotelbooking.backend.data.DataEntity;
 import com.hotelbooking.backend.data.OperationResult;
 import com.hotelbooking.backend.data.stream.DataStream;
 import com.hotelbooking.backend.utils.OperationExecutor;
@@ -13,6 +12,7 @@ public abstract class BaseController<T> {
 
     protected BaseController(DataStream dataStream) {
         this.dataStream = dataStream;
+        this.dataStream.connect();
     }
 
     protected Response<T> processOperation(OperationExecutor operation) {
