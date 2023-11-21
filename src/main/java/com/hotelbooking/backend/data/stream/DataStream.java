@@ -10,7 +10,8 @@ import java.util.Optional;
 public interface DataStream {
     public abstract void connect();
     public abstract void disconnect();
-    public<T extends DataEntity> List<T> executeSelect(QueryBuilder<T> query);
+    public<T extends DataEntity> List<T> select(QueryBuilder<T> query);
+    public boolean exists(QueryBuilder<? extends DataEntity> query);
     public<T extends DataEntity> Optional<T> add(T data);
-    public OperationResult remove(QueryBuilder<?> query);
+    public OperationResult remove(QueryBuilder<? extends DataEntity> query);
 }

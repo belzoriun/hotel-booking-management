@@ -1,12 +1,8 @@
 package com.hotelbooking.backend.controller;
 
 import com.hotelbooking.backend.data.query.builder.QueryBuilder;
-import com.hotelbooking.backend.data.query.condition.ConditionBuilder;
-import com.hotelbooking.backend.data.query.condition.Constant;
-import com.hotelbooking.backend.data.query.condition.Field;
 import com.hotelbooking.backend.data.stream.DataStream;
 import com.hotelbooking.backend.models.Room;
-import com.hotelbooking.backend.models.RoomBooking;
 import com.hotelbooking.backend.utils.Response;
 import com.hotelbooking.backend.utils.ResponseWrapper;
 import org.springframework.web.bind.annotation.*;
@@ -22,21 +18,23 @@ public class RoomController extends BaseController<Room> {
 
     @GetMapping("/rooms")
     public Response<List<Room>> GetAllRooms() throws NoSuchFieldException {
-        return ResponseWrapper.Wrap(dataStream.executeSelect(
+        return ResponseWrapper.Wrap(dataStream.select(
             new QueryBuilder<>(Room.class)
-                    .join(Room.class.getDeclaredField("booking"))
-                    .join(RoomBooking.class.getDeclaredField("booking"))
+                    .join((Room r) -> r.booking)
         ));
     }
 
     @GetMapping("/room")
     public Response<Room> GetRoom(@RequestParam(value = "id", defaultValue = "1") int id) {
+        if(!dataStream.exists(new QueryBuilder<>(Room.class)
+                .where((Room room) -> room.number == id))) {
+            return ResponseWrapper.WrapError("Room with id "+id+" not found");
+        }
         try {
-            return ResponseWrapper.Wrap(dataStream.executeSelect(
+            return ResponseWrapper.Wrap(dataStream.select(
                     new QueryBuilder<>(Room.class)
-                        .where(new ConditionBuilder(new Constant<>(id)).equal(new Field(Room.class, "id")).get())
-                        .join(Room.class.getDeclaredField("booking"))
-                        .join(RoomBooking.class.getDeclaredField("booking"))
+                        .where((Room room) -> room.number == id)
+                        .join((Room r) -> r.booking)
             ).stream().findFirst());
         } catch (Exception e) {
             return ResponseWrapper.WrapError(e.getMessage());
@@ -52,7 +50,7 @@ public class RoomController extends BaseController<Room> {
     public Response<Room> RemoveRoom(@RequestParam(value = "id", defaultValue = "1") int id) {
         return processOperation(() -> dataStream.remove(
                 new QueryBuilder<>(Room.class)
-                    .where(new ConditionBuilder(new Constant<>(id)).equal(new Field(Room.class, "id")).get())
+                    .where((Room room) -> room.number == id)
         ));
     }
 }

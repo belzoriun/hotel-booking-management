@@ -4,10 +4,10 @@ import com.hotelbooking.backend.data.DataEntity;
 import com.hotelbooking.backend.data.EntityJoin;
 import com.hotelbooking.backend.data.OperationResult;
 import com.hotelbooking.backend.data.query.builder.QueryBuilder;
+import com.hotelbooking.backend.data.query.condition.Condition;
 import com.hotelbooking.backend.data.stream.DataStream;
 import com.hotelbooking.backend.models.Booking;
 import com.hotelbooking.backend.models.Room;
-import com.hotelbooking.backend.models.RoomBooking;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -22,10 +22,6 @@ public class MemoryDataStream implements DataStream {
         rooms.add(new Room(1, 1));
         rooms.add(new Room(2, 1));
         this.data.put(Room.class, rooms);
-
-        List<RoomBooking> roomBookings = new ArrayList<>();
-        roomBookings.add(new RoomBooking(1, 1));
-        data.put(RoomBooking.class, roomBookings);
 
         List<Booking> bookings = new ArrayList<>();
         bookings.add(new Booking(1, new Date(), new Date()));
@@ -44,9 +40,48 @@ public class MemoryDataStream implements DataStream {
     }
 
     @Override
-    public <T extends DataEntity> List<T> executeSelect(QueryBuilder<T> query) {
+    public <T extends DataEntity> List<T> select(QueryBuilder<T> query) {
         return (List<T>) data.get(query.getSelectedEntity()).stream().map(d -> createJoin(d, query.getJoins()))
-                .filter(d -> query.getConditions().execute(d)).toList();
+                .filter(d -> performCondition(query.getConditions(), d)).toList();
+    }
+    private boolean performCondition(Condition<Boolean> cond, DataEntity entity) {
+        List<DataEntity> entities = new ArrayList<>();
+        List<DataEntity> process = new ArrayList<>();
+        process.add(entity);
+        entities.add(entity);
+        while(!process.isEmpty()) {
+            DataEntity e = process.remove(0);
+            for (Field f : Arrays.stream(e.getClass().getDeclaredFields()).filter(f -> f.isAnnotationPresent(EntityJoin.class)).toList()) {
+                try {
+                    if(f.get(e) != null) {
+                        if (Collection.class.isAssignableFrom(f.getType())) {
+                            for (DataEntity en : ((Collection<DataEntity>) f.get(e))) {
+                                if (!entities.contains(en)) {
+                                    process.add(en);
+                                    entities.add(en);
+                                }
+                            }
+                        } else {
+                            if (!entities.contains((DataEntity) f.get(e))) {
+                                process.add((DataEntity) f.get(e));
+                                entities.add((DataEntity) f.get(e));
+                            }
+                        }
+                    }
+                } catch (IllegalAccessException ignored) {
+                }
+            }
+        }
+        boolean result = false;
+        for(DataEntity e : entities) {
+            result = result || cond.execute(e);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean exists(QueryBuilder<? extends DataEntity> query) {
+        return !select(query).isEmpty();
     }
 
     @Override
@@ -62,7 +97,7 @@ public class MemoryDataStream implements DataStream {
     }
 
     @Override
-    public OperationResult remove(QueryBuilder<?> query) {
+    public OperationResult remove(QueryBuilder<? extends DataEntity> query) {
         if(!this.data.containsKey(query.getSelectedEntity())) return OperationResult.NOT_FOUND;
 
         List<? extends DataEntity> list = this.data.get(query.getSelectedEntity());

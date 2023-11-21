@@ -8,14 +8,16 @@ import org.apache.tomcat.util.http.parser.EntityTag;
 public class Field implements Condition<Object>{
 
     private String name;
-    private Class<? extends DataEntity> entity;
+    private Class<?> entity;
 
-    public Field(Class<? extends DataEntity> entity, String name) {
+    public Field(Class<?> entity, String name) {
         this.name = name;
+        this.entity = entity;
     }
 
     @Override
     public Object execute(DataEntity entity) {
+        if(!entity.getClass().equals(this.entity)) return null;
         try {
             return DataEntity.getDataFromFieldName(entity, name);
         } catch (Exception e) {

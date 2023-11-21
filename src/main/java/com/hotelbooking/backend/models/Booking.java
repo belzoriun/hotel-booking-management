@@ -16,8 +16,8 @@ public class Booking implements DataEntity {
     public Date start;
     @EntityField(name = "end")
     public Date end;
-    @EntityJoin(ownerField = "id", joinedEntityField = "booking_id")
-    public RoomBooking roomBooking;
+    @EntityJoin(ownerField = "id", joinedEntityField = "id")
+    public Room room;
 
     public Booking(int id, Date start, Date end) {
         this.id = id;
