@@ -17,7 +17,7 @@ public class RoomController extends BaseController<Room> {
     }
 
     @GetMapping("/rooms")
-    public Response<List<Room>> GetAllRooms() throws NoSuchFieldException {
+    public Response<List<Room>> GetAllRooms() {
         return ResponseWrapper.Wrap(dataStream.select(
             new QueryBuilder<>(Room.class)
                     .join((Room r) -> r.booking)
@@ -52,5 +52,14 @@ public class RoomController extends BaseController<Room> {
                 new QueryBuilder<>(Room.class)
                     .where((Room room) -> room.number == id)
         ));
+    }
+
+    @PatchMapping("/room")
+    public Response<Room> UpdateRoom(@RequestBody Room newRoom) {
+        return ResponseWrapper.Wrap(dataStream.update(newRoom));
+    }
+    @PutMapping("/room")
+    public Response<Room> AddOrUpdateRoom(@RequestBody Room newRoom) {
+        return ResponseWrapper.Wrap(dataStream.addOrUpdate(newRoom));
     }
 }

@@ -14,7 +14,12 @@ public class ConditionBuilder {
     }
 
     public ConditionBuilder equal(Condition<?> cond) {
-        return new ConditionBuilder(new Equal(this.condition, cond));
+        this.condition = new Equal(this.condition, cond);
+        return this;
+    }
+    public ConditionBuilder and(Condition<?> cond) {
+        this.condition = new And(cond, this.condition);
+        return this;
     }
 
     public<T> Condition<T> get() {

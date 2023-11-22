@@ -10,11 +10,11 @@ import java.util.Date;
 @Entity(name = "booking")
 public class Booking implements DataEntity {
 
-    @EntityField(name = "id")
+    @EntityField(name = "id", isKey = true)
     public int id;
-    @EntityField(name = "start")
+    @EntityField(name = "start", isKey = true)
     public Date start;
-    @EntityField(name = "end")
+    @EntityField(name = "end", isKey = true)
     public Date end;
     @EntityJoin(ownerField = "id", joinedEntityField = "id")
     public Room room;

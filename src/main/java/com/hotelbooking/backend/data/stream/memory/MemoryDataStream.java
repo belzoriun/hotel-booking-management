@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
-public class MemoryDataStream implements DataStream {
+public class MemoryDataStream extends DataStream {
 
     private final Map<Class<? extends DataEntity>, List<? extends DataEntity>> data = new HashMap<>();
 
@@ -93,6 +93,15 @@ public class MemoryDataStream implements DataStream {
             newData.add(data);
             this.data.put(data.getClass(), newData);
         }
+        return Optional.of(data);
+    }
+
+    @Override
+    public <T extends DataEntity> Optional<T> update(T data) {
+        Optional<? extends DataEntity> existing = select(DataEntity.createKeyQuery(data)).stream().findFirst();
+        if(existing.isEmpty()) return Optional.empty();
+        this.data.get(data.getClass()).remove(existing.get());
+        ((List<T>)this.data.get(data.getClass())).add(data);
         return Optional.of(data);
     }
 

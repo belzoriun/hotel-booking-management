@@ -7,7 +7,7 @@ import com.hotelbooking.backend.data.EntityJoin;
 import java.util.List;
 
 public class Room implements DataEntity {
-    @EntityField(name = "id")
+    @EntityField(name = "id", isKey = true)
     public int number;
     @EntityField(name = "beds")
     public int beds;
